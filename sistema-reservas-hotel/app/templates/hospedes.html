@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóspedes</title>
+</head>
+<body>
+    <header>
+        <h1>Gerenciamento de Hóspedes</h1>
+        <nav aria-label="Navegação principal">
+            <a href="/">Início</a>
+            <a href="/pagina-reservas">Reservas</a>
+        </nav>
+    </header>
+
+    <main>
+        <section aria-labelledby="cadastro">
+            <h2 id="cadastro">Cadastrar hóspede</h2>
+
+            <form id="form-hospede">
+                <label for="nome">Nome completo:</label>
+                <input type="text" id="nome" required>
+
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" required>
+
+                <label for="telefone">Telefone:</label>
+                <input type="tel" id="telefone" required>
+
+                <label for="documento">Documento:</label>
+                <input type="text" id="documento" required>
+
+                <button type="submit">Cadastrar hóspede</button>
+            </form>
+
+            <p id="mensagem" role="status" aria-live="polite"></p>
+        </section>
+
+        <section aria-labelledby="lista">
+            <h2 id="lista">Hóspedes cadastrados</h2>
+            <ul id="lista-hospedes"></ul>
+        </section>
+    </main>
+
+    <script>
+        const formulario = document.getElementById("form-hospede");
+        const mensagem = document.getElementById("mensagem");
+        const lista = document.getElementById("lista-hospedes");
+
+        async function carregarHospedes() {
+            const resposta = await fetch("/hospedes");
+            const hospedes = await resposta.json();
+
+            lista.innerHTML = "";
+
+            hospedes.forEach(hospede => {
+                const item = document.createElement("li");
+                item.textContent = `${hospede.nome} - ${hospede.email}`;
+                lista.appendChild(item);
+            });
+        }
+
+        formulario.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+
+            const hospede = {
+                nome: document.getElementById("nome").value,
+                email: document.getElementById("email").value,
+                telefone: document.getElementById("telefone").value,
+                documento: document.getElementById("documento").value
+            };
+
+            const resposta = await fetch("/hospedes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(hospede)
+            });
+
+            const resultado = await resposta.json();
+
+            if (resposta.ok) {
+                mensagem.textContent = "Hóspede cadastrado com sucesso!";
+                formulario.reset();
+                carregarHospedes();
+            } else {
+                mensagem.textContent = "Erro ao cadastrar hóspede. Verifique os dados.";
+            }
+        });
+
+        carregarHospedes();
+    </script>
+</body>
+</html>

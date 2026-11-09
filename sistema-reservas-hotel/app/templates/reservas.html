@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas</title>
+</head>
+<body>
+    <header>
+        <h1>Gerenciamento de Reservas</h1>
+        <nav aria-label="Navegação principal">
+            <a href="/">Início</a>
+            <a href="/pagina-hospedes">Hóspedes</a>
+        </nav>
+    </header>
+
+    <main>
+        <section aria-labelledby="cadastro">
+            <h2 id="cadastro">Realizar reserva</h2>
+
+            <form id="form-reserva">
+                <label for="hospede">Hóspede:</label>
+                <select id="hospede" required></select>
+
+                <label for="quarto">Quarto:</label>
+                <select id="quarto" required></select>
+
+                <label for="adultos">Quantidade de adultos:</label>
+                <input type="number" id="adultos" min="1" required>
+
+                <label for="criancas">Quantidade de crianças:</label>
+                <input type="number" id="criancas" min="0" max="4" value="0" required>
+
+                <label for="check-in">Check-in:</label>
+                <input type="date" id="check-in" required>
+
+                <label for="check-out">Check-out:</label>
+                <input type="date" id="check-out" required>
+
+                <label for="cupom">Cupom promocional (opcional):</label>
+                <input type="text" id="cupom">
+
+                <button type="submit">Realizar reserva</button>
+            </form>
+
+            <p id="mensagem" role="status" aria-live="polite"></p>
+        </section>
+
+        <section aria-labelledby="lista">
+            <h2 id="lista">Reservas cadastradas</h2>
+            <ul id="lista-reservas"></ul>
+        </section>
+    </main>
+
+    <script>
+        const formulario = document.getElementById("form-reserva");
+        const mensagem = document.getElementById("mensagem");
+        const lista = document.getElementById("lista-reservas");
+
+        async function carregarOpcoes() {
+            const respostaHospedes = await fetch("/hospedes");
+            const hospedes = await respostaHospedes.json();
+
+            const respostaQuartos = await fetch("/quartos");
+            const quartos = await respostaQuartos.json();
+
+            const selectHospede = document.getElementById("hospede");
+            const selectQuarto = document.getElementById("quarto");
+
+            selectHospede.innerHTML = "";
+            selectQuarto.innerHTML = "";
+
+            hospedes.forEach(hospede => {
+                const opcao = document.createElement("option");
+                opcao.value = hospede.id;
+                opcao.textContent = hospede.nome;
+                selectHospede.appendChild(opcao);
+            });
+
+            quartos.forEach(quarto => {
+                const opcao = document.createElement("option");
+                opcao.value = quarto.id;
+                opcao.textContent = `${quarto.tipo} - R$ ${quarto.preco_diaria}/noite`;
+                selectQuarto.appendChild(opcao);
+            });
+        }
+
+        async function carregarReservas() {
+            const resposta = await fetch("/reservas");
+            const reservas = await resposta.json();
+
+            lista.innerHTML = "";
+
+            reservas.forEach(reserva => {
+                const item = document.createElement("li");
+                item.textContent =
+                    `Reserva ${reserva.id} | Quarto ${reserva.quarto_id} | ` +
+                    `${reserva.check_in} até ${reserva.check_out} | ` +
+                    `R$ ${reserva.valor_total} | ${reserva.status}`;
+
+                lista.appendChild(item);
+            });
+        }
+
+        formulario.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+
+            const reserva = {
+                hospede_id: Number(document.getElementById("hospede").value),
+                quarto_id: Number(document.getElementById("quarto").value),
+                adultos: Number(document.getElementById("adultos").value),
+                criancas: Number(document.getElementById("criancas").value),
+                check_in: document.getElementById("check-in").value,
+                check_out: document.getElementById("check-out").value,
+                cupom: document.getElementById("cupom").value || null
+            };
+
+            const resposta = await fetch("/reservas", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(reserva)
+            });
+
+            const resultado = await resposta.json();
+
+            if (resposta.ok && !resultado.erro) {
+                mensagem.textContent =
+                    `Reserva realizada com sucesso! Valor total: R$ ${resultado.valor_total}`;
+
+                formulario.reset();
+                carregarReservas();
+            } else {
+                mensagem.textContent = resultado.erro || "Erro ao realizar reserva. Verifique os dados.";
+            }
+        });
+
+        carregarOpcoes();
+        carregarReservas();
+    </script>
+</body>
+</html>

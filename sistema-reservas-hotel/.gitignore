@@ -1,0 +1,24 @@
+# Ambiente virtual
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Cache do pytest
+.pytest_cache/
+
+# Cache do Playwright
+playwright/.cache/
+
+# Relatórios de cobertura
+.coverage
+htmlcov/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Variáveis de ambiente
+.env

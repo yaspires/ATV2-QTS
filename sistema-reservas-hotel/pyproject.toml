@@ -1,0 +1,35 @@
+[project]
+name = "atv2-qts"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "email-validator>=2.3.0",
+    "fastapi>=0.162.2",
+    "jinja2>=3.1.6",
+    "pydantic>=2.14.3",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "axe-playwright-python>=0.1.8",
+    "faker>=40.44.0",
+    "httpx>=0.28.1",
+    "locust>=2.47.0",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.17.0",
+    "pytest-playwright>=0.10.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+pythonpath = ["."]
+addopts = "-v --strict-markers"
+markers = [
+    "integration: testes de integração",
+    "e2e: testes de ponta a ponta",
+    "accessibility: testes de acessibilidade"
+]
